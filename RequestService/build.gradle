@@ -1,0 +1,47 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+group = 'ru.kalampus'
+version = '0.0.1-SNAPSHOT'
+
+apply plugin: 'application'
+mainClassName = 'ru.kalampus.RequestService.RequestServiceApplication'
+
+repositories {
+	mavenCentral()
+	mavenLocal()
+	flatDir {
+		dirs 'RequestServiceApi/build/libs', 'src/main/resources/libs'
+	}
+}
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+bootJar {
+	enabled = false
+}
+
+jar {
+	enabled = true
+}
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-webflux:2.5.6'
+	implementation 'org.springframework.kafka:spring-kafka:2.7.6'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.6'
+	testImplementation 'io.projectreactor:reactor-test:3.3.22.RELEASE'
+	testImplementation 'org.springframework.kafka:spring-kafka-test:2.7.6'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.data:spring-data-commons'
+	compileOnly 'org.projectlombok:lombok:1.18.20'
+	annotationProcessor 'org.projectlombok:lombok:1.18.20'
+	implementation 'org.slf4j:slf4j-api:1.7.26'
+	implementation project(":RequestServiceApi")
+}
+test {
+	useJUnitPlatform()
+}

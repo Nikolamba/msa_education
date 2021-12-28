@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  description: "Обеспечение логистическим службам Банка интерфейса в Октопус посредством REST-адаптера для протокола SOAP over HTTP"
+  version: "1.0.0"
+  title: "Requests"
+  contact:
+    email: "nmeleshkin@neflex.ru"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+tags:
+  - name: "First service"
+    description: "Принималка заявок"
+paths:
+  /requests:
+    description: "Запрос в формате JSON - заявка на кредит"
+    post:
+      tags:
+        - "credit-request"
+      summary: "Сообщение-запрос credit-request - заявка на кредит"
+      requestBody:
+        description: "заявка на кредит"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+      responses:
+        '200':
+          description: "Ответ на запрос на подачу заявки на кредит"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: "код ошибки конечной системы + описание ошибки из конечной системы/Формат запроса не соответствует описанию. Не заполнено обязательное поле"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditResponse"
+        '408':
+          description: "Превышен интервал времени ожидания ответа от конечной системы"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditResponse"
+        '415':
+          description: "Ошибка преобразования"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditResponse"
+        '500':
+          description: "Внутренняя ошибка сервера Octopus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditResponse"
+        '503':
+          description: "Ошибка вызова сервиса Kafka"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditResponse"
+
+components:
+  schemas:
+    
+    StatusMessage:
+      type: "object"
+      properties:
+        code:
+          description: 'Код ошибки (либо 0)'
+          type: "string"
+        text:
+          description: 'Текст ошибки'
+          type: "string"
+    
+    HeaderResponse:
+      type: "object"
+      properties:
+        messageId:
+          description: 'Идентификатор сообщения'
+          type: "string"
+        messageDate:
+          description: 'Дата и время ответа'
+          type: "string"
+          format: "date-time"
+      required:
+        - messageId
+        
+    CreditResponseBody:
+      type: "object"
+      description: "Сервис поиска персопродуктов - тело ответного сообщения"
+      properties:
+        StatusResponse:
+          type: "boolean"
+          default: false
+          description: "Статус ответного сообщения. false - зявка отклонена, true - заявка одобрена"
+
+    CreditRequest:
+      type: "object"
+      description: "Сообщение  заявка на кредит"
+      properties:
+        RequestID:
+          type: "string"
+          description: "Уникальный ID заявки"
+        FIO:
+          type: "string"
+          description: "ФИО заявителя"
+        BirthdayDate:
+          type: "string"
+          format: "date"
+          description: "Дата рождения заявителя"
+        AmountRUB:
+          type: "integer"
+          description: "Запрашиваемая сумма в рублях"
+        Month:
+          type: "integer"
+          description: "Количество месяцев"
+    
+    CreditResponse:
+      type: "object"
+      description: "ответное сообщение"
+      properties:
+        header:
+          $ref: '#/components/schemas/HeaderResponse'
+        statusMessage:
+          $ref: '#/components/schemas/StatusMessage'
+        body:
+          $ref: '#/components/schemas/CreditResponseBody'
